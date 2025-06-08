@@ -7,11 +7,13 @@ import { MongoRepository } from '../persistence/mongo-repository.js';
 import { DomainService } from '../domain/service.js';
 import { MongoSeeder } from '../persistence/mongo-seeder.js';
 import { PgSeeder } from '../persistence/pg-seeder.js';
+import { AnalyticsService } from '../domain/analytics-service.js';
 
 export class RequestContext {
   static #ctx = new AsyncLocalStorage();
 
   static init(req, res, next) {
+    // Improvised DI composition root, sufficient for our use-cases. Should use a proper DI framework in production.
     const db = AppContext.get('db');
     const repo =
       db === 'pg'
@@ -19,8 +21,9 @@ export class RequestContext {
         : new MongoRepository(MongoConnection);
     const mongoSeeder = new MongoSeeder(MongoConnection);
     const pgSeeder = new PgSeeder(PgConnection);
+    const analyticsService = new AnalyticsService(repo);
     const domainService = new DomainService(repo, mongoSeeder, pgSeeder);
-    return this.#ctx.run({ domainService }, async () => {
+    return this.#ctx.run({ domainService, analyticsService }, async () => {
       await next();
     });
   }
