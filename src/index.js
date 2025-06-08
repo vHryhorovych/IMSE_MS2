@@ -3,6 +3,10 @@ import { PgConnection } from './persistence/pg-connection.js';
 import { MongoConnection } from './persistence/mongo-connection.js';
 import { RequestContext } from './infra/request-context.js';
 import { router } from './routes/router.js';
+import { analyticsRouter } from './routes/analytics.js';
+import { bikeRouter } from './routes/bike.js';
+import { employeeRouter } from './routes/employee.js';
+import { storeRouter } from './routes/store.js';
 
 const app = express();
 
@@ -11,11 +15,10 @@ const app = express();
 
 app.use(RequestContext.init.bind(RequestContext));
 app.use(router);
-
-// app.get('/items', getItems);
-// app.post('/items', addItem);
-// app.put('/items/:id', updateItem);
-// app.delete('/items/:id', deleteItem);
+app.use('/analytics', analyticsRouter);
+app.use('/bike', bikeRouter);
+app.use('/employee', employeeRouter);
+app.use('/store', storeRouter);
 
 await Promise.all([PgConnection.init(), MongoConnection.init()]).then(() => {
   app.listen(3000, () => console.log('Listening on port 3000'));

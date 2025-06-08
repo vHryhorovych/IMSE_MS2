@@ -1,11 +1,12 @@
 import { smapleNTimes } from './randomiser.js';
+import seedData from './seed-data.json' with { type: "json" };
 
 export class PgSeeder {
   constructor(client) {
     this.client = client;
   }
 
-  async seed(data) {
+  async seed(data = seedData) {
     const tables = Object.keys(data);
     await this.client.query(
       `TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`,

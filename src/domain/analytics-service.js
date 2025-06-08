@@ -4,6 +4,13 @@ export class AnalyticsService {
   }
 
   analyticsSembera(filters) {
-    return this.repository.analyticsSembera(filters);
+    return { success: true, data: this.repository.analyticsSembera(filters) };
+  }
+
+  anayticsHryhorovych(filters) {
+    return {
+      success: true,
+      data: this.repository.anayticsHryhorovych(filters),
+    };
   }
 }
