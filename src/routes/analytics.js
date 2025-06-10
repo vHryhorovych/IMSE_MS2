@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { RequestContext } from '../infra/request-context';
+import { RequestContext } from '../infra/request-context.js';
 
 export const analyticsRouter = Router();
 

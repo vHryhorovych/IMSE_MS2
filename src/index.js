@@ -10,8 +10,8 @@ import { storeRouter } from './routes/store.js';
 
 const app = express();
 
-// app.use(express.json());
-// app.use(express.static(__dirname + '/static'));
+app.use(express.json());
+app.use(express.static(import.meta.dirname + '/client/dist/client/browser'));
 
 app.use(RequestContext.init.bind(RequestContext));
 app.use(router);

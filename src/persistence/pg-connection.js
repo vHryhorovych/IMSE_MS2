@@ -26,8 +26,8 @@ export class PgConnection {
       database,
       port: 5433,
     });
+    await this.client.query('SELECT NOW()');
     console.log('PostgreSQL connection established');
-    return this.client;
   }
 
   static async teardown() {

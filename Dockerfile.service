@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+
+ARG NODE_VERSION=22
+
+FROM node:${NODE_VERSION}-alpine
+
+WORKDIR /
+
+# Copy the rest of the source files into the image.
+COPY . .
+
+# Expose the port that the application listens on.
+EXPOSE 3000
+
+# Build the client.
+RUN cd src/client && npm install && npm run build
+# Install the server dependencies and start the server.
+RUN npm install
+CMD ["node", "src/index.js"]

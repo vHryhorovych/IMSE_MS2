@@ -2,7 +2,7 @@ import router from 'express';
 
 export const bikeRouter = router();
 
-r.get('/', async (req, res) => {
+bikeRouter.get('/', async (req, res) => {
   try {
     const result = await RequestContext.get('domainService').getBikes({
       storeId: req.body.storeId,
@@ -14,7 +14,7 @@ r.get('/', async (req, res) => {
   }
 });
 
-r.post('/:id/rent', async (req, res) => {
+bikeRouter.post('/:id/rent', async (req, res) => {
   try {
     const result = await RequestContext.get('domainService').rentBike({
       bikeId: req.params.id,

@@ -2,7 +2,7 @@ import router from 'express';
 
 export const employeeRouter = router();
 
-r.post('/', async (req, res) => {
+employeeRouter.post('/', async (req, res) => {
   try {
     const result = await RequestContext.get('domainService').createEmployee(
       req.body,

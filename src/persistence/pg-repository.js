@@ -3,43 +3,75 @@ export class PgRepository {
     this.client = client;
   }
 
-  getSores() {
-    return this.client
-      .query('SELECT id, address, zip_code FROM store')
-      .then((res) =>
-        res.rows.map((s) => ({
-          id: s.id,
-          address: s.address,
-          zipCode: s.zip_code,
-        })),
-      );
+  getStores() {
+    return this.client.query(
+      'SELECT id, address, zip_code AS "zipCode" FROM store',
+    );
   }
 
-  getBikes({ storeId }) {
+  getBikes({ storeId } = {}) {
     return this.client
-      .query('SELECT id, price, model FROM bicycle WHERE store_id = $1', [
-        storeId,
-      ])
+      .query(
+        'SELECT id, price, model, store_id FROM bicycle WHERE ($1::integer IS NULL OR store_id = $1)',
+        [storeId ?? null],
+      )
       .then((res) =>
-        res.rows.map((b) => ({
+        res.map((b) => ({
           id: b.id,
           price: b.price,
           model: b.model,
-          store: { id: storeId },
+          store: { id: b.store_id },
         })),
       );
   }
 
-  getRentals({ bikeId }) {
+  getEmployees() {
+    const query = `
+      SELECT 
+        e.id, 
+        e.first_name "firstName", 
+        e.last_name "lastName", 
+        jsonb_build_object('id', e.store_id) AS "store", 
+        jsonb_build_object('id', e.supervisor_id) AS "supervisor", 
+        sp.commission_rate "commissionRate", 
+        sp.revenue, 
+        t.specialization, 
+        t.certificate, 
+        CASE
+          WHEN sp.employee_id IS NOT NULL THEN 'salesperson'
+          WHEN t.employee_id IS NOT NULL THEN 'technician'
+        END AS role
+      FROM employee e
+      LEFT JOIN salesperson sp ON e.id = sp.employee_id
+      LEFT JOIN technician t ON e.id = t.employee_id
+    `;
+    return this.client.query(query);
+  }
+
+  getCustomers() {
+    const query = `
+      SELECT 
+        id, 
+        first_name "firstName", 
+        last_name "lastName", 
+        email 
+      FROM customer
+    `;
+    return this.client.query(query);
+  }
+
+  getRentals({ bikeId } = {}) {
     const query = `
       SELECT 
         r.id, 
         r.start_date "startDate", 
         r.end_date "endDate",
+        jsonb_build_object('id', r.bicycle_id) AS "bicycle",
+        jsonb_build_object('id', r.customer_id) AS "customer"
       FROM rental r
-      WHERE r.bike_id = $1
+      WHERE $1::integer IS NULL OR r.bicycle_id = $1
     `;
-    return this.client.query(query, [bikeId]).then((res) => res.rows);
+    return this.client.query(query, [bikeId ?? null]);
   }
 
   saveStore(store) {

@@ -16,8 +16,19 @@ export class DomainService {
   }
 
   async switchToMongo() {
+    const stores = await this.repository.getStores();
+    const bikes = await this.repository.getBikes();
+    const rentals = await this.repository.getRentals();
+    const customers = await this.repository.getCustomers();
+    const employees = await this.repository.getEmployees();
+    await this.mongoSeeder.seed({
+      stores,
+      bikes,
+      rentals,
+      customers,
+      employees,
+    });
     AppContext.set('db', 'mongo');
-    await this.mongoSeeder.seed();
     return { success: true };
   }
 
