@@ -10,6 +10,7 @@
     "dev": "nodemon --inspect=0.0.0.0:9229 -L src/index.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "mongodb": "6.17",
     "pg": "^8.16.0",

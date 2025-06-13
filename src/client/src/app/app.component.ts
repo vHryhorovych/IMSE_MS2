@@ -1,16 +1,59 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, computed, inject, OnInit } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { ApiService } from './api.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  template: `
-    <h1>Welcome to {{title}}!</h1>
-
-    <router-outlet />
-  `,
-  styles: [],
+  imports: [
+    RouterOutlet,
+    MatToolbarModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatButtonModule,
+    MatSlideToggleModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    FormsModule,
+  ],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
-  title = 'client';
+export class AppComponent implements OnInit {
+  private readonly router = inject(Router);
+  private readonly apiService = inject(ApiService);
+  private readonly snackBar = inject(MatSnackBar);
+
+  isMongoSelected = false;
+  isDataImported = false;
+  // TODO: data not shown after import
+  async ngOnInit() {
+    const { db, dataImported } = await this.apiService.getAppCtx();
+    this.isMongoSelected = db === 'mongo';
+    this.isDataImported = dataImported;
+    this.router.navigate(['/auth']);
+  }
+
+  async switchToMongo() {
+    await this.apiService.switchToMongo();
+    this.snackBar.open('Successfully migrated to MongoDB.', 'OK', {
+      duration: 3000,
+    });
+    this.isMongoSelected = true;
+  }
+
+  async importData() {
+    await this.apiService.importData();
+    this.snackBar.open('Successfully imported data to PG.', 'OK', {
+      duration: 3000,
+    });
+    this.isDataImported = true;
+  }
 }

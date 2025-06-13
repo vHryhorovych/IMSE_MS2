@@ -38,7 +38,7 @@ export class MongoSeeder {
       const storeIdx = stores.findIndex((s) => s.id === bike.store.id);
       return {
         ...omitKeys(['id'])(bike),
-        store: { id: mongoStoreIds[storeIdx] },
+        store: { _id: mongoStoreIds[storeIdx] },
       };
     });
     const { insertedIds: mongoBikeIds } = await this.client.db

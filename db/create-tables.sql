@@ -58,3 +58,9 @@ CREATE TABLE technician (
     certificate VARCHAR(100) NOT NULL,
     FOREIGN KEY (employee_id) REFERENCES employee(id)
 );
+
+CREATE TABLE config (
+    db VARCHAR(20) NOT NULL,
+    data_imported BOOLEAN NOT NULL
+);
+INSERT INTO config (db, data_imported) VALUES ('pg', FALSE);

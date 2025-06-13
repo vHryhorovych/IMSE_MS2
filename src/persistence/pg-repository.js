@@ -129,9 +129,8 @@ export class PgRepository {
   async saveRental(rental) {
     const rentalId = await this.client
       .query(
-        'INSERT INTO rentals (id, bike_id, customer_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        'INSERT INTO rental (bicycle_id, customer_id, start_date, end_date) VALUES ($1, $2, $3, $4) RETURNING id',
         [
-          rental.id,
           rental.bicycle.id,
           rental.customer.id,
           rental.startDate,

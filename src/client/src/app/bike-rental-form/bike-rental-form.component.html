@@ -1,0 +1,60 @@
+<div class="bike-rental-form">
+  <h3>Bike rental form</h3>
+  <p>Please select a date range of a desired rental:</p>
+
+  <form class="form" [formGroup]="form">
+    <div class="date">
+      <mat-form-field>
+        <mat-label>Start Date</mat-label>
+        <input
+          matInput
+          formControlName="startDate"
+          [matDatepicker]="startDatePicker"
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="startDatePicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #startDatePicker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Start time</mat-label>
+        <input
+          matInput
+          [matTimepicker]="startTimepicker"
+          formControlName="startDate"
+        />
+        <mat-timepicker #startTimepicker />
+        <mat-timepicker-toggle [for]="startTimepicker" matSuffix />
+      </mat-form-field>
+    </div>
+
+    <div class="date">
+      <mat-form-field>
+        <mat-label>End Date</mat-label>
+        <input
+          matInput
+          formControlName="endDate"
+          [matDatepicker]="endDatePicker"
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="endDatePicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #endDatePicker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>End time</mat-label>
+        <input
+          matInput
+          [matTimepicker]="endTimepicker"
+          formControlName="endDate"
+        />
+        <mat-timepicker #endTimepicker />
+        <mat-timepicker-toggle [for]="endTimepicker" matSuffix />
+      </mat-form-field>
+    </div>
+
+    <button mat-raised-button (click)="submit()">Submit</button>
+  </form>
+</div>

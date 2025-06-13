@@ -1,0 +1,23 @@
+<div class="bikes-container">
+  <h3>Bikes</h3>
+  <p>Please select a bike to rent:</p>
+
+  <table mat-table [dataSource]="bikes() ?? []">
+    <ng-container matColumnDef="price">
+      <th mat-header-cell *matHeaderCellDef>Price</th>
+      <td mat-cell *matCellDef="let element">{{ element.price }}€</td>
+    </ng-container>
+
+    <ng-container matColumnDef="model">
+      <th mat-header-cell *matHeaderCellDef>Model</th>
+      <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      (click)="rentBike(row.id)"
+    ></tr>
+  </table>
+</div>

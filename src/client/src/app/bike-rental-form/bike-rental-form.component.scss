@@ -1,0 +1,9 @@
+.bike-rental-form {
+  display: flex;
+  flex-direction: column;
+
+  .date {
+    gap: 10px;
+    display: flex;
+  }
+}
