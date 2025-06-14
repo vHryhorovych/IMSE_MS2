@@ -24,12 +24,12 @@ app.use('/employee', employeeRouter);
 app.use('/store', storeRouter);
 app.use('/customer', customerRouter);
 
-await Promise.all([PgConnection.init(), MongoConnection.init()]).then(
-  async () => {
-    await AppContext.init();
-    app.listen(3000, () => console.log('Listening on port 3000'));
-  },
-);
+//MongoConnection.init()
+
+await Promise.all([PgConnection.init()]).then(async () => {
+  await AppContext.init();
+  app.listen(3000, () => console.log('Listening on port 3000'));
+});
 
 const gracefulShutdown = (error) => {
   console.error('Graceful shutdown initiated:', error);
