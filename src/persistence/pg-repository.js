@@ -173,16 +173,16 @@ export class PgRepository {
       .then((r) => r.rows);
   }
 
-  async atalyticsHryhorovych({ startDate, endDate }) {
+  async analyticsHryhorovych({ startDate, endDate }) {
     const query = `
       WITH all_months AS (
         SELECT generate_series(
-          DATE $1,
-          DATE $2,
-          INTERVAL '1 month'
+          $1::DATE,
+          $2::DATE,
+          '1 month'::INTERVAL
         )::DATE AS month_start
       ),
-      store_ids AS (SELECT id FROM stores),
+      store_ids AS (SELECT id FROM store),
       store_months AS (
         SELECT s.id, m.month_start
         FROM store_ids s
@@ -193,20 +193,18 @@ export class PgRepository {
         s.id,
         s.address,
         sm.month_start AS "month",
-        COALESCE(SUM(rental_price.price), 0) AS "revenue"
+        COALESCE(SUM(rental_price.price), 0)::INTEGER AS "revenue"
       FROM store_months sm
-      JOIN stores s ON s.id = sm.storeid
-      JOIN bicycles b ON b.storeid = s.storeid 
-      LEFT JOIN rentals r ON 
-        r.bikeid = b.bikeid AND
-        r.rentedoutdate >= sm.month_start AND																													 -- START OF THE MONTH 
-        r.rentedoutdate	<= DATE_TRUNC('month', sm.month_start) + INTERVAL '1 MONTH' - INTERVAL '1 DAY' -- END OF THE MONTH 
-      LEFT JOIN bicycles rental_price ON rental_price.bikeid = r.bikeid
-      GROUP BY s.storeid, sm.month_start
-      ORDER BY s.storeid, sm.month_start
+      JOIN store s ON s.id = sm.id
+      JOIN bicycle b ON b.store_id = s.id
+      LEFT JOIN rental r ON 
+        r.bicycle_id = b.id AND
+        r.start_date >= sm.month_start AND																													 -- START OF THE MONTH 
+        r.start_date <= DATE_TRUNC('month', sm.month_start) + INTERVAL '1 MONTH' - INTERVAL '1 DAY'  -- END OF THE MONTH 
+      LEFT JOIN bicycle rental_price ON rental_price.id = r.bicycle_id 
+      GROUP BY s.id, sm.month_start
+      ORDER BY s.id, sm.month_start
     `;
-    return await this.client
-      .query(query, [startDate, endDate])
-      .then((r) => r.rows);
+    return await this.client.query(query, [startDate, endDate]);
   }
 }

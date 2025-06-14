@@ -14,4 +14,8 @@ export class HomeComponent {
 
   userRole = this.authService.getUserRole();
   useCaseUrl = this.userRole() === 'salesperson' ? '/oboarding' : '/stores';
+  analyticsUrl =
+    this.userRole() === 'salesperson'
+      ? '/analytics/sembera'
+      : '/analytics/hryhorovych';
 }

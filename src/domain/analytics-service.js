@@ -7,10 +7,16 @@ export class AnalyticsService {
     return { success: true, data: this.repository.analyticsSembera(filters) };
   }
 
-  anayticsHryhorovych(filters) {
+  async analyticsHryhorovych(filters) {
+    const startDate = new Date(filters.startDate.setDate(1));
+    const endDate = new Date(filters.endDate.setDate(1));
+    const analytics = await this.repository.analyticsHryhorovych({
+      startDate,
+      endDate,
+    });
     return {
       success: true,
-      data: this.repository.anayticsHryhorovych(filters),
+      data: analytics,
     };
   }
 }

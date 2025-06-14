@@ -12,6 +12,7 @@ import { AuthComponent } from './auth/auth.component';
 import { StoresComponent } from './stores/stores.component';
 import { BikesComponent } from './bikes/bikes.component';
 import { BikeRentalFormComponent } from './bike-rental-form/bike-rental-form.component';
+import { AnalyticsHryhorovychComponent } from './analytics-hryhorovych/analytics-hryhorovych.component';
 
 @Injectable()
 export class IsLoggedIn implements CanActivate {
@@ -54,6 +55,12 @@ export const routes: Routes = [
   {
     path: 'bikes/:id/rent',
     component: BikeRentalFormComponent,
+    canActivate: [IsLoggedIn],
+    data: { roles: ['customer'] },
+  },
+  {
+    path: 'analytics/hryhorovych',
+    component: AnalyticsHryhorovychComponent,
     canActivate: [IsLoggedIn],
     data: { roles: ['customer'] },
   },

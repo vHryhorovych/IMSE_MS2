@@ -1,5 +1,20 @@
 import { ObjectId } from 'mongodb';
 
+const getMonthsInRange = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const months = [];
+
+  let current = new Date(start);
+
+  while (current <= end) {
+    months.push(new Date(current));
+    // Move to the next month
+    current.setMonth(current.getMonth() + 1);
+  }
+  return months;
+};
+
 export class MongoRepository {
   constructor(client) {
     this.client = client;
@@ -174,40 +189,100 @@ export class MongoRepository {
       .then((r) => r.rows);
   }
 
-  async atalyticsHryhorovych({ startDate, endDate }) {
-    const query = `
-      WITH all_months AS (
-        SELECT generate_series(
-          DATE $1,
-          DATE $2,
-          INTERVAL '1 month'
-        )::DATE AS month_start
-      ),
-      store_ids AS (SELECT id FROM stores),
-      store_months AS (
-        SELECT s.id, m.month_start
-        FROM store_ids s
-        CROSS JOIN all_months m
-      )
+  async analyticsHryhorovych({ startDate, endDate }) {
+    const months = getMonthsInRange(startDate, endDate);
 
-      SELECT 
-        s.id,
-        s.address,
-        sm.month_start AS "month",
-        COALESCE(SUM(rental_price.price), 0) AS "revenue"
-      FROM store_months sm
-      JOIN stores s ON s.id = sm.storeid
-      JOIN bicycles b ON b.storeid = s.storeid 
-      LEFT JOIN rentals r ON 
-        r.bikeid = b.bikeid AND
-        r.rentedoutdate >= sm.month_start AND																													 -- START OF THE MONTH 
-        r.rentedoutdate	<= DATE_TRUNC('month', sm.month_start) + INTERVAL '1 MONTH' - INTERVAL '1 DAY' -- END OF THE MONTH 
-      LEFT JOIN bicycles rental_price ON rental_price.bikeid = r.bikeid
-      GROUP BY s.storeid, sm.month_start
-      ORDER BY s.storeid, sm.month_start
-    `;
-    return await this.client
-      .query(query, [startDate, endDate])
-      .then((r) => r.rows);
+    const pipeline = [
+      // === Stage 1: Create all (store, month) combinations ===
+      // This replicates the `store_months` CTE (CROSS JOIN)
+      {
+        $addFields: {
+          // Pass the generated months array into the pipeline for each store
+          month: months,
+        },
+      },
+      {
+        // Create a separate document for each store/month pair
+        $unwind: '$month',
+      },
+      // === Stage 2: Find and Sum Revenue for each (store, month) pair ===
+      // This replicates the LEFT JOINs and GROUP BY logic
+      {
+        $lookup: {
+          from: 'rentals',
+          let: {
+            store_id: '$_id',
+            start_of_month: '$month',
+            // Calculate the start of the next month for the date range comparison
+            start_of_next_month: {
+              $dateAdd: { startDate: '$month', unit: 'month', amount: 1 },
+            },
+          },
+          pipeline: [
+            // Step A: Match rentals within the given month
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $gte: ['$startDate', '$$start_of_month'] },
+                    { $lte: ['$startDate', '$$start_of_next_month'] },
+                  ],
+                },
+              },
+            },
+            // Step B: Join with bicycles to get price and check the store_id
+            {
+              $lookup: {
+                from: 'bikes',
+                localField: 'bicycle._id',
+                foreignField: '_id',
+                as: 'bicycle',
+              },
+            },
+            { $unwind: '$bicycle' },
+            // Step C: Filter for rentals whose bicycle belongs to the correct store
+            {
+              $match: {
+                $expr: { $eq: ['$bicycle.store._id', '$$store_id'] },
+              },
+            },
+            // Step D: Project just the price for the final sum
+            {
+              $project: {
+                _id: 0,
+                price: { $toDouble: '$bicycle.price' },
+                ms: '$$start_of_month',
+                me: '$$start_of_next_month',
+              },
+            },
+          ],
+          as: 'monthly_rentals',
+        },
+      },
+      // === Stage 3: Format the final output ===
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          address: '$address',
+          month: '$month',
+          // Sum the prices from the rentals found. $sum on an empty array is 0,
+          // which handles the COALESCE(..., 0) logic.
+          revenue: { $sum: '$monthly_rentals.price' },
+        },
+      },
+      // === Stage 4: Order the results ===
+      {
+        $sort: {
+          id: 1,
+          month: 1,
+        },
+      },
+    ];
+
+    return await this.client.db
+      .collection('stores')
+      .aggregate(pipeline)
+      .toArray();
   }
 }

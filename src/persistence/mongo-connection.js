@@ -1,9 +1,9 @@
 import { MongoClient } from 'mongodb';
 
-const user = 'root';
-const password = 'example';
-const host = 'localhost';
-const port = 27018;
+const host = process.env.MONGO_DB_HOST ?? 'localhost';
+const port = process.env.MONGO_DB_PORT ?? 27018;
+const user = process.env.MONGO_DB_USER ?? 'root';
+const password = process.env.MONGO_DB_PASSWORD ?? 'example';
 const db = 'imse';
 
 export class MongoConnection {

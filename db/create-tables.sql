@@ -37,8 +37,8 @@ CREATE TABLE rental (
     id SERIAL PRIMARY KEY,
     bicycle_id INT NOT NULL,
     customer_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
+    start_date TIMESTAMPTZ NOT NULL,
+    end_date TIMESTAMPTZ NOT NULL,
     FOREIGN KEY (bicycle_id) REFERENCES bicycle(id),
     FOREIGN KEY (customer_id) REFERENCES customer(id)
 );

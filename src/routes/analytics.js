@@ -21,7 +21,10 @@ analyticsRouter.get('/hryhorovych', async (req, res) => {
     const { startDate, endDate } = req.query;
     const result = await RequestContext.get(
       'analyticsService',
-    ).analyticsHryhorovych({ startDate, endDate });
+    ).analyticsHryhorovych({
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+    });
     res.json(result);
   } catch (err) {
     console.error('Error fetching analytics:', err);

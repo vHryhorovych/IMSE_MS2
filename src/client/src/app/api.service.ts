@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Bike, User, Store } from './domain/models';
+import { Bike, User, Store, AnalyticsHryhorovychEntry } from './domain/models';
 import { firstValueFrom, map } from 'rxjs';
 
 type ApiResponse<T> = {
@@ -109,6 +109,22 @@ export class ApiService {
   importData() {
     return firstValueFrom(
       this.http.post<ApiResponse<void>>(`${this.baseUrl}/import`, {}),
+    );
+  }
+
+  analyticsHryhorovych(startDate: Date, endDate: Date) {
+    const params = new HttpParams()
+      .set('startDate', startDate.toISOString())
+      .set('endDate', endDate.toISOString());
+    return firstValueFrom(
+      this.http
+        .get<ApiResponse<AnalyticsHryhorovychEntry[]>>(
+          `${this.baseUrl}/analytics/hryhorovych`,
+          {
+            params,
+          },
+        )
+        .pipe(map((r) => r.data)),
     );
   }
 }

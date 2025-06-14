@@ -19,3 +19,9 @@ export type User = {
   email: string;
   role: 'customer' | 'salesperson';
 };
+
+export type AnalyticsHryhorovychEntry = {
+  address: string;
+  revenue: number;
+  month: Date;
+};
