@@ -20,21 +20,22 @@ export class MongoRepository {
     this.client = client;
   }
 
-  async getCustomers() {
+  async getCustomers({ id } = {}) {
+    const filters = {};
+    if (id) {
+      filters._id = new ObjectId(id);
+    }
     return this.client.db
       .collection('customers')
-      .find(
-        {},
-        {
-          projection: {
-            id: '$_id',
-            _id: 0,
-            firstName: 1,
-            lastName: 1,
-            email: 1,
-          },
+      .find(filters, {
+        projection: {
+          id: '$_id',
+          _id: 0,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
         },
-      )
+      })
       .toArray();
   }
 
@@ -83,10 +84,18 @@ export class MongoRepository {
   }
 
   async saveRental(rental) {
-    rental.customer._id = new ObjectId(rental.customer.id);
-    rental.bicycle._id = new ObjectId(rental.bicycle.id);
-    delete rental.customer.id;
-    delete rental.bicycle.id;
+    const customer = await this.getCustomers({ id: rental.customer.id }).then(
+      (c) => c[0],
+    );
+    customer._id = new ObjectId(rental.customer.id);
+    delete customer.id;
+    rental.customer = customer;
+    const bicycle = await this.getBikes({ id: rental.bicycle.id }).then(
+      (b) => b[0],
+    );
+    bicycle._id = new ObjectId(rental.bicycle.id);
+    delete bicycle.id;
+    rental.bicycle = bicycle;
     const result = await this.client.db.collection('rentals').insertOne(rental);
     rental.id = result.insertedId;
     return rental;
@@ -130,21 +139,25 @@ export class MongoRepository {
       .toArray();
   }
 
-  getBikes({ storeId } = {}) {
+  getBikes({ storeId, id } = {}) {
+    const filters = {};
+    if (storeId) {
+      filters['store._id'] = new ObjectId(storeId);
+    }
+    if (id) {
+      filters._id = new ObjectId(id);
+    }
     return this.client.db
       .collection('bikes')
-      .find(
-        { 'store._id': new ObjectId(storeId) ?? null },
-        {
-          projection: {
-            id: '$_id',
-            _id: 0,
-            model: 1,
-            price: 1,
-            store: 1,
-          },
+      .find(filters, {
+        projection: {
+          id: '$_id',
+          _id: 0,
+          model: 1,
+          price: 1,
+          store: 1,
         },
-      )
+      })
       .toArray();
   }
 
@@ -231,85 +244,55 @@ export class MongoRepository {
     const months = getMonthsInRange(startDate, endDate);
 
     const pipeline = [
-      // === Stage 1: Create all (store, month) combinations ===
-      // This replicates the `store_months` CTE (CROSS JOIN)
       {
         $addFields: {
-          // Pass the generated months array into the pipeline for each store
           month: months,
         },
       },
       {
-        // Create a separate document for each store/month pair
         $unwind: '$month',
       },
-      // === Stage 2: Find and Sum Revenue for each (store, month) pair ===
-      // This replicates the LEFT JOINs and GROUP BY logic
       {
         $lookup: {
           from: 'rentals',
           let: {
             store_id: '$_id',
             start_of_month: '$month',
-            // Calculate the start of the next month for the date range comparison
             start_of_next_month: {
               $dateAdd: { startDate: '$month', unit: 'month', amount: 1 },
             },
           },
           pipeline: [
-            // Step A: Match rentals within the given month
             {
               $match: {
                 $expr: {
                   $and: [
                     { $gte: ['$startDate', '$$start_of_month'] },
                     { $lte: ['$startDate', '$$start_of_next_month'] },
+                    { $eq: ['$bicycle.store._id', '$$store_id'] },
                   ],
                 },
               },
             },
-            // Step B: Join with bicycles to get price and check the store_id
-            {
-              $lookup: {
-                from: 'bikes',
-                localField: 'bicycle._id',
-                foreignField: '_id',
-                as: 'bicycle',
-              },
-            },
-            { $unwind: '$bicycle' },
-            // Step C: Filter for rentals whose bicycle belongs to the correct store
-            {
-              $match: {
-                $expr: { $eq: ['$bicycle.store._id', '$$store_id'] },
-              },
-            },
-            // Step D: Project just the price for the final sum
             {
               $project: {
                 _id: 0,
                 price: { $toDouble: '$bicycle.price' },
-                ms: '$$start_of_month',
-                me: '$$start_of_next_month',
               },
             },
           ],
           as: 'monthly_rentals',
         },
       },
-      // === Stage 3: Format the final output ===
       {
         $project: {
           _id: 0,
           id: '$_id',
           address: '$address',
           month: '$month',
-          // Sum the prices from the rentals found. $sum on an empty array is 0,
-          // which handles the COALESCE(..., 0) logic.
           revenue: { $sum: '$monthly_rentals.price' },
         },
       },
-      // === Stage 4: Order the results ===
       {
         $sort: {
           id: 1,

@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 const omitKeys = (keys) => (obj) => {
   const rest = { ...obj };
   for (const key of keys) {
@@ -63,9 +65,13 @@ export class MongoSeeder {
         _id: mongoCustomerIds[customerIdx],
       };
       const bicycle = {
-        ...omitKeys(['id', 'store'])(bikes[bikeIdx]),
+        ...omitKeys(['id'])(bikes[bikeIdx]),
         _id: mongoBikeIds[bikeIdx],
       };
+      const storeIdx = stores.findIndex((s) => s.id === bicycle.store.id);
+      const storeMongoIdx = mongoStoreIds[storeIdx];
+      bicycle.store._id = storeMongoIdx;
+      delete bicycle.store.id;
       return {
         ...omitKeys(['id'])(rental),
         customer,
