@@ -5,10 +5,10 @@ export const analyticsRouter = Router();
 
 analyticsRouter.get('/sembera', async (req, res) => {
   try {
-    const { zipcode_min = '1010', zipcode_max = '1230' } = req.query;
+    const { zipcodeMin, zipcodeMax } = req.query;
     const result = await RequestContext.get(
       'analyticsService',
-    ).analyticsSembera({ zipcode_min, zipcode_max });
+    ).analyticsSembera({ zipcodeMin, zipcodeMax });
     res.json(result);
   } catch (err) {
     console.error('Error fetching analytics:', err);

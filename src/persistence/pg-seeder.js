@@ -1,6 +1,8 @@
 import { smapleNTimes } from './randomiser.js';
 import seedData from './seed-data.json' with { type: 'json' };
 
+const N = 6;
+
 export class PgSeeder {
   constructor(client) {
     this.client = client;
@@ -16,20 +18,24 @@ export class PgSeeder {
         await this.seedEmployees(data);
         continue;
       }
-      const columns = data[table][0].join(', ');
-      const rows = smapleNTimes(data[table].slice(1), 3);
+      const columns = data[table][0];
+      const samples = smapleNTimes(data[table].slice(1), N);
+      const rows = this.normaliseIds(columns, samples);
       const values = rows.map((row) => `(${row.join(', ')})`).join(', ');
-      const query = `INSERT INTO ${table} (${columns}) VALUES ${values}`;
+      const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${values}`;
       await this.client.query(query);
     }
   }
 
   async seedEmployees(data) {
-    const rows = smapleNTimes(data['employee'].slice(1), 3);
+    const columns = data['employee'][0];
+    const samples = smapleNTimes(data['employee'].slice(1), N);
+    const rows = this.normaliseIds(columns, samples);
+
     for (const row of rows) {
       const id = await this.client
         .query(
-          `INSERT INTO employee ("first_name", "last_name", "store_id") VALUES (${row[0]}, ${row[1]}, ${row[2]}) RETURNING id`,
+          `INSERT INTO employee ("first_name", "last_name", "store_id", "email") VALUES (${row[0]}, ${row[1]}, ${row[2]}, ${row[3]}) RETURNING id`,
         )
         .then((res) => res[0].id);
       if (row.at(-1)) {
@@ -46,5 +52,17 @@ export class PgSeeder {
         );
       }
     }
+  }
+
+  normaliseIds(columns, rows) {
+    const idxs = columns
+      .map((c, idx) => (c.includes('id') ? idx : null))
+      .filter((e) => e !== null);
+    return rows.map((r) => {
+      for (const idx of idxs) {
+        r[idx] = (r[idx] % N) + 1;
+      }
+      return r;
+    });
   }
 }

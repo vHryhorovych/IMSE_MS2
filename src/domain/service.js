@@ -62,25 +62,14 @@ export class DomainService {
     });
   }
 
-  async createemployee({
-    id,
-    first_name,
-    second_name,
-    store_id,
-    supervisor_id = null,
-    commission_rate = 0.05,
-    revenue = 0,
-    role,
-  }) {
+  async createEmployee({ firstName, lastName, email, storeId, role, extras }) {
     const employee = await this.repository.createEmployee({
-      id,
-      firstName: first_name,
-      secondName: second_name,
-      store: { id: store_id },
-      supervisor: supervisor_id ? { id: supervisor_id } : null,
-      commission_rate,
-      revenue,
+      firstName,
+      lastName,
+      store: { id: storeId },
       role,
+      email,
+      ...extras,
     });
     return { success: true, data: employee };
   }

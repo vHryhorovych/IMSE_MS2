@@ -3,8 +3,11 @@ export class AnalyticsService {
     this.repository = repository;
   }
 
-  analyticsSembera(filters) {
-    return { success: true, data: this.repository.analyticsSembera(filters) };
+  async analyticsSembera(filters) {
+    return {
+      success: true,
+      data: await this.repository.analyticsSembera(filters),
+    };
   }
 
   async analyticsHryhorovych(filters) {

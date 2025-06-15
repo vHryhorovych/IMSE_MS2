@@ -81,27 +81,32 @@ export class PgRepository {
     );
   }
 
-  async saveEmployee(employee) {
+  async createEmployee(employee) {
     const employeeId = await this.client
       .query(
-        'INSERT INTO employees (id, first_name, last_name, store_id) VALUES ($1, $2, $3, $4) RETURNING id',
-        [employee.id, employee.firstName, employee.lastName, employee.store.id],
+        'INSERT INTO employee (first_name, last_name, store_id, email) VALUES ($1, $2, $3, $4) RETURNING id',
+        [
+          employee.firstName,
+          employee.lastName,
+          employee.store.id,
+          employee.email,
+        ],
       )
       .then((res) => res[0].id);
+
     if (employee.role === 'salesperson') {
       await this.client.query(
-        'INSERT INTO saleperson (employee_id, commission_rate, revenue) VALUES ($1, $2, $3)',
-        [employee.id, employee.commissionRate, employee.revenue],
+        'INSERT INTO salesperson (employee_id, commission_rate, revenue) VALUES ($1, $2, $3)',
+        [employeeId, employee.commissionRate, employee.revenue ?? 0],
       );
     }
-    if (employee.role === 'techinician') {
+    if (employee.role === 'technician') {
       await this.client.query(
-        'INSERT INTO technicians (specialisation, certificate) VALUES ($1, $2)',
-        [employee.specialisation, employee.certificate],
+        'INSERT INTO technician (employee_id, specialization, certificate) VALUES ($1, $2, $3)',
+        [employeeId, employee.specialisation, employee.certificate],
       );
     }
-    employee.id = employeeId;
-    return employee;
+    return { id: employeeId };
   }
 
   async saveBicylce(bicycle) {
@@ -143,34 +148,40 @@ export class PgRepository {
   }
 
   async analyticsSembera(filters) {
-    const { zipcode_min = '1010', zipcode_max = '1230' } = filters;
+    const { zipcodeMin = '1010', zipcodeMax = '1230' } = filters;
     const query = `
       SELECT 
-        s.id AS StoreID,
+        s.id AS "storeId",
         s.address,
 
         -- Salesperson metrics
-        COUNT(DISTINCT sp.employee_id) AS NumSalespersons,
-        SUM(CASE WHEN sp.revenue = 0 THEN 1 ELSE 0 END) AS NewlyHiredSalespersons,
-        ROUND(SUM(sp.revenue), 2) AS TotalRevenue,
-        ROUND(AVG(NULLIF(sp.revenue, 0)), 2) AS AvgRevenue,
+        COUNT(DISTINCT sp.employee_id) AS "salesPersonsN",
+        SUM(CASE WHEN sp.revenue = 0 THEN 1 ELSE 0 END) AS "newlyHiredSalespersonsN",
+        ROUND(SUM(sp.revenue), 2) AS "totalRevenue",
+        ROUND(AVG(NULLIF(sp.revenue, 0)), 2) AS "avgRevenue",
 
         -- Technician metrics
-        COUNT(DISTINCT t.employee_id) AS NumTechnicians,
-
-        -- List of employees at the store
-        STRING_AGG(DISTINCT e.first_name || ' ' || e.second_name, ', ' ORDER BY e.second_name) AS Employees
+        COUNT(DISTINCT t.employee_id) AS "techniciansN",
         
-      FROM store s
+        -- List of employees at the store
+        (
+          SELECT ARRAY_AGG(name ORDER BY name)
+          FROM (
+            SELECT DISTINCT e2.first_name || ' ' || e2.last_name AS name
+            FROM employee e2
+            WHERE e2.store_id = s.id
+          ) sub
+        ) AS employees
+        
+        
+      FROM store AS s
       LEFT JOIN employee e ON s.id = e.store_id
       LEFT JOIN salesperson sp ON e.id = sp.employee_id
       LEFT JOIN technician t ON e.id = t.employee_id
-      WHERE s.zip_code BETWEEN $1 AND $2
-      GROUP BY s.id, s.address;
+      WHERE s.zip_code::integer BETWEEN $1::integer AND $2::integer
+      GROUP BY s.id, s.address
     `;
-    return await this.client
-      .query(query, [zipcode_min, zipcode_max])
-      .then((r) => r.rows);
+    return await this.client.query(query, [zipcodeMin, zipcodeMax]);
   }
 
   async analyticsHryhorovych({ startDate, endDate }) {

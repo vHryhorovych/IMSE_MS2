@@ -1,10 +1,18 @@
-import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import {
+  inject,
+  Injectable,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { User } from './domain/models';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly router = inject(Router);
   private _isAuthenticated = signal(false);
   private _userRole: WritableSignal<'salesperson' | 'customer' | null> =
     signal(null);
@@ -26,5 +34,11 @@ export class AuthService {
 
   getUser(): Signal<User | null> {
     return this._user;
+  }
+
+  logout() {
+    this._user.set(null);
+    this._userRole.set(null);
+    this._isAuthenticated.set(false);
   }
 }

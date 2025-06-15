@@ -1,7 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Bike, User, Store, AnalyticsHryhorovychEntry } from './domain/models';
+import {
+  Bike,
+  User,
+  Store,
+  AnalyticsHryhorovychEntry,
+  AnalyticsSemberaEntry,
+} from './domain/models';
 import { firstValueFrom, map } from 'rxjs';
 
 type ApiResponse<T> = {
@@ -124,6 +130,49 @@ export class ApiService {
             params,
           },
         )
+        .pipe(map((r) => r.data)),
+    );
+  }
+
+  analyticsSembera(zipcodeMin: string, zipcodeMax: string) {
+    const params = new HttpParams()
+      .set('zipcodeMin', zipcodeMin)
+      .set('zipcodeMax', zipcodeMax);
+    return firstValueFrom(
+      this.http
+        .get<ApiResponse<AnalyticsSemberaEntry[]>>(
+          `${this.baseUrl}/analytics/sembera`,
+          {
+            params,
+          },
+        )
+        .pipe(map((r) => r.data)),
+    );
+  }
+
+  saveEmployee(
+    firstName: string,
+    lastName: string,
+    email: string,
+    role: string = 'salesperson',
+    storeId: number | string,
+    extras: {
+      specialisation: string | null;
+      certificate: string | null;
+      commissionRate: number | null;
+      revenue: number | null;
+    },
+  ) {
+    return firstValueFrom(
+      this.http
+        .post<ApiResponse<{ rentalId: number }>>(`${this.baseUrl}/employee`, {
+          firstName,
+          lastName,
+          email,
+          role,
+          storeId,
+          extras,
+        })
         .pipe(map((r) => r.data)),
     );
   }

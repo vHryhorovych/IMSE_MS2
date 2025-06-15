@@ -13,6 +13,8 @@ import { StoresComponent } from './stores/stores.component';
 import { BikesComponent } from './bikes/bikes.component';
 import { BikeRentalFormComponent } from './bike-rental-form/bike-rental-form.component';
 import { AnalyticsHryhorovychComponent } from './analytics-hryhorovych/analytics-hryhorovych.component';
+import { EmployeeOnboardingFormComponent } from './employee-onboarding-form/employee-onboarding-form.component';
+import { AnalyticsSemberaComponent } from './analytics-sembera/analytics-sembera.component';
 
 @Injectable()
 export class IsLoggedIn implements CanActivate {
@@ -35,11 +37,18 @@ export class IsLoggedIn implements CanActivate {
 }
 
 export const routes: Routes = [
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'auth',
     component: AuthComponent,
   },
   { path: 'home', component: HomeComponent, canActivate: [IsLoggedIn] },
+  {
+    path: 'onboarding',
+    component: EmployeeOnboardingFormComponent,
+    canActivate: [IsLoggedIn],
+    data: { roles: ['salesperson', 'technician'] },
+  },
   {
     path: 'stores',
     component: StoresComponent,
@@ -63,5 +72,11 @@ export const routes: Routes = [
     component: AnalyticsHryhorovychComponent,
     canActivate: [IsLoggedIn],
     data: { roles: ['customer'] },
+  },
+  {
+    path: 'analytics/sembera',
+    component: AnalyticsSemberaComponent,
+    canActivate: [IsLoggedIn],
+    data: { roles: ['salesperson', 'technician'] },
   },
 ];

@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { ApiService } from './api.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-root',
@@ -30,7 +31,9 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly apiService = inject(ApiService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly authService = inject(AuthService);
 
+  isAuthenticated = this.authService.isAuthenticated();
   isMongoSelected = false;
   isDataImported = false;
   // TODO: data not shown after import
@@ -47,6 +50,8 @@ export class AppComponent implements OnInit {
       duration: 3000,
     });
     this.isMongoSelected = true;
+    this.authService.logout();
+    location.replace('http://localhost:3000/');
   }
 
   async importData() {
@@ -55,5 +60,16 @@ export class AppComponent implements OnInit {
       duration: 3000,
     });
     this.isDataImported = true;
+    this.authService.logout();
+    location.replace('http://localhost:3000/');
+  }
+
+  goToAuth() {
+    this.authService.logout();
+    this.router.navigateByUrl('/auth');
+  }
+
+  goToHome() {
+    this.router.navigateByUrl('/home');
   }
 }

@@ -1,0 +1,58 @@
+<div class="employee-onboarding">
+  <h3>Employee onboarding</h3>
+  <div
+    style="display: flex; flex-direction: column; max-width: 400px"
+    [formGroup]="form"
+  >
+    <mat-form-field>
+      <mat-label>First Name</mat-label>
+      <input matInput formControlName="firstName" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Last Name</mat-label>
+      <input matInput formControlName="lastName" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="salesperson">Salesperson</mat-option>
+        <mat-option value="technician">Technician</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <ng-container [formGroup]="extrasForm">
+      @if (form.value.role === 'salesperson') {
+      <mat-form-field>
+        <mat-label>Comission Rate</mat-label>
+        <input
+          matInput
+          formControlName="commissionRate"
+          type="number"
+          step="0.01"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Revenue</mat-label>
+        <input matInput formControlName="revenue" type="number" step="0.01" />
+      </mat-form-field>
+      } @if (form.value.role === 'technician') {
+      <mat-form-field>
+        <mat-label>Specialisation</mat-label>
+        <input matInput formControlName="specialisation" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Certificate</mat-label>
+        <input matInput formControlName="certificate" />
+      </mat-form-field>
+      }
+    </ng-container>
+
+    <button style="margin-left: auto" mat-raised-button (click)="submit()">
+      Submit
+    </button>
+  </div>
+</div>

@@ -24,9 +24,17 @@ export class MongoSeeder {
 
     const employeesToInsert = employees.map((emp) => {
       const storeIdx = stores.findIndex((s) => s.id === emp.store.id);
-
+      if (emp.role === 'salesperson') {
+        delete emp.certificate;
+        delete emp.specialization;
+        emp.revenue = parseFloat(emp.revenue);
+        emp.commissionRate = parseFloat(emp.commissionRate);
+      } else {
+        delete emp.revenue;
+        delete emp.commissionRate;
+      }
       return {
-        ...omitKeys(['id'])(emp),
+        ...omitKeys(['id', 'supervisor'])(emp),
         store: { _id: mongoStoreIds[storeIdx] },
       };
     });

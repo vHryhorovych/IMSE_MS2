@@ -18,6 +18,7 @@ CREATE TABLE employee (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
     store_id INT NOT NULL,
     supervisor_id INT,
     FOREIGN KEY (store_id) REFERENCES store(id),

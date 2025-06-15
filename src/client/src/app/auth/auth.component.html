@@ -2,9 +2,14 @@
   @if (step === 'role') {
   <h3>Select role</h3>
 
-  <button mat-button (click)="selectRole('salesperson')">Salesperson</button>
-  <button mat-button (click)="selectRole('customer')">Customer</button>
+  <button mat-button (click)="selectRole('salesperson')">
+    Salesperson (Sembera's part)
+  </button>
+  <button mat-button (click)="selectRole('customer')">
+    Customer (Hryhorovych's part)
+  </button>
   } @else if (step === 'user') {
+  <button mat-raised-button (click)="goBack()">Back</button>
   <h3>Select {{ selectedRole }} user</h3>
 
   <div class="users">

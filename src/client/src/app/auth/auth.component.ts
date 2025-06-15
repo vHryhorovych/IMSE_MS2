@@ -34,4 +34,9 @@ export class AuthComponent {
     this.authService.authenticate(user);
     this.router.navigateByUrl('/home');
   }
+
+  goBack() {
+    this.step = 'role';
+    this.selectedRole = null;
+  }
 }

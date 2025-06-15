@@ -1,0 +1,65 @@
+<div class="analytics-sembera">
+  <h3>Analytics Sembera:</h3>
+  <p>
+    Employee and revenue analytics per store for a selected zip code range.
+    Please, select zip code range:
+  </p>
+  <div style="display: flex; gap: 10px" [formGroup]="form">
+    <mat-form-field>
+      <mat-label>Zip Code Min</mat-label>
+      <input matInput formControlName="zipcodeMin" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Zip Code Max</mat-label>
+      <input matInput formControlName="zipcodeMax" />
+    </mat-form-field>
+  </div>
+
+  <table mat-table [dataSource]="analytics">
+    <ng-container matColumnDef="address">
+      <th mat-header-cell *matHeaderCellDef>Address</th>
+      <td mat-cell *matCellDef="let element">{{ element.address }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="salesPersonsN">
+      <th mat-header-cell *matHeaderCellDef>N of Salespersons</th>
+      <td mat-cell *matCellDef="let element">{{ element.salesPersonsN }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="newlyHiredSalespersonsN">
+      <th mat-header-cell *matHeaderCellDef>N of Newly Hired Salespersons</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.newlyHiredSalespersonsN }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="techniciansN">
+      <th mat-header-cell *matHeaderCellDef>N of Technicians</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.techniciansN }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="totalRevenue">
+      <th mat-header-cell *matHeaderCellDef>Total Revenue</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.totalRevenue ?? 0 }}€
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="avgRevenue">
+      <th mat-header-cell *matHeaderCellDef>Average Revenue</th>
+      <td mat-cell *matCellDef="let element">{{ element.avgRevenue ?? 0 }}€</td>
+    </ng-container>
+
+    <ng-container matColumnDef="employees">
+      <th mat-header-cell *matHeaderCellDef>Employees</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.employees ? element.employees.join(', ') : '-' }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+    <tr mat-row *matRowDef="let row; columns: columnsToDisplay"></tr>
+  </table>
+</div>

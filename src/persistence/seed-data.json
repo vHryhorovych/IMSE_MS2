@@ -9,47 +9,88 @@
     ["'Rosasgasse'", 1217],
     ["'Hauptstrasse 1'", 1230],
     ["'Lange Gasse 12'", 1070],
-    ["'Graben 21'", 1010]
+    ["'Graben 21'", 1010],
+    ["'Strasse 20'", 1050]
   ],
   "employee": [
     [
       "\"first_name\"",
       "\"last_name\"",
       "\"store_id\"",
+      "\"email\"",
       "\"commission_rate\"",
       "\"revenue\"",
       "\"specialization\"",
       "\"certificate\""
     ],
-    ["'Sarah'", "'Miller'", 1, 0.1, 1300, null, null],
-    ["'Kerim'", "'Attak'", 1, null, null, "'SpecialistA'", "'Certificate A'"],
-    ["'Lukas'", "'Unterweger'", 2, 0.13, 720, null, null],
+    ["'Sarah'", "'Miller'", 1, "'sarah@gmail.com'", 0.1, 1300, null, null],
+    [
+      "'Kerim'",
+      "'Attak'",
+      2,
+      "'kerim@gmail.com'",
+      null,
+      null,
+      "'SpecialistA'",
+      "'Certificate A'"
+    ],
+    ["'Lukas'", "'Unterweger'", 3, "'lukas@gmail.com'", 0.13, 720, null, null],
     [
       "'Paul'",
       "'Steinberger'",
-      2,
+      4,
+      "'paul@gmail.com'",
       null,
       null,
       "'SpecialistC'",
       "'Certificate C'"
     ],
-    ["'Friedrich'", "'Muller'", 3, 0.08, 1400, null, null],
-    ["'Anna'", "'Schmidt'", 3, 0.15, 900, null, null],
-    ["'Max'", "'Mustermann'", 2, 0.12, 1100, null, null],
-    ["'Erika'", "'Musterfrau'", 2, 0.18, 600, null, null],
-    ["'John'", "'Doe'", 3, null, null, "'SpecialistB'", "'Certificate B'"]
+    [
+      "'Friedrich'",
+      "'Muller'",
+      5,
+      "'friedrich@gmail.com'",
+      0.08,
+      1400,
+      null,
+      null
+    ],
+    ["'Anna'", "'Schmidt'", 6, "'anna@gmail.com'", 0.15, 900, null, null],
+    ["'Max'", "'Mustermann'", 7, "'max@gmail.com'", 0.12, 1100, null, null],
+    ["'Erika'", "'Musterfrau'", 8, "'erika@gmail.com'", 0.18, 600, null, null],
+    [
+      "'John'",
+      "'Doe'",
+      9,
+      "'john@gmail.com'",
+      null,
+      null,
+      "'SpecialistB'",
+      "'Certificate B'"
+    ],
+    [
+      "'John'",
+      "'Smith'",
+      10,
+      "'john@gmail.com'",
+      null,
+      null,
+      "'Specialist C'",
+      "'Certificate C'"
+    ]
   ],
   "bicycle": [
     ["\"price\"", "\"model\"", "\"store_id\""],
     [20, "'Cube'", 1],
-    [30, "'Trek'", 1],
-    [15, "'Giant'", 2],
-    [18, "'Cannondale'", 2],
-    [35, "'Bianchi'", 3],
-    [25, "'Specialized'", 3],
-    [22, "'Scott'", 2],
-    [28, "'Merida'", 3],
-    [40, "'Canyon'", 2]
+    [30, "'Trek'", 2],
+    [15, "'Giant'", 3],
+    [18, "'Cannondale'", 4],
+    [35, "'Bianchi'", 5],
+    [25, "'Specialized'", 6],
+    [22, "'Scott'", 7],
+    [28, "'Merida'", 8],
+    [40, "'Canyon'", 9],
+    [20, "'Bike'", 10]
   ],
   "customer": [
     ["\"first_name\"", "\"last_name\"", "\"email\""],
@@ -64,10 +105,13 @@
     ["\"bicycle_id\"", "\"customer_id\"", "\"start_date\"", "\"end_date\""],
     [1, 1, "'2025-04-02'", "'2025-04-12'"],
     [2, 2, "'2025-04-08'", "'2025-04-22'"],
-    [1, 2, "'2025-04-12'", "'2025-04-22'"],
-    [3, 3, "'2025-04-10'", "'2025-04-20'"],
-    [2, 3, "'2025-04-15'", "'2025-04-25'"],
-    [1, 2, "'2025-04-18'", "'2025-04-28'"],
-    [2, 2, "'2025-04-20'", "'2025-04-30'"]
+    [3, 3, "'2025-04-12'", "'2025-04-22'"],
+    [4, 4, "'2025-04-10'", "'2025-04-20'"],
+    [5, 5, "'2025-04-15'", "'2025-04-25'"],
+    [6, 6, "'2025-04-18'", "'2025-04-28'"],
+    [7, 7, "'2025-04-01'", "'2025-04-10'"],
+    [8, 8, "'2025-05-01'", "'2025-05-30'"],
+    [9, 9, "'2025-05-10'", "'2025-04-20'"],
+    [10, 10, "'2025-05-07'", "'2025-05-08'"]
   ]
 }

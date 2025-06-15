@@ -31,6 +31,7 @@ export class MongoRepository {
             _id: 0,
             firstName: 1,
             lastName: 1,
+            email: 1,
           },
         },
       )
@@ -48,6 +49,8 @@ export class MongoRepository {
             _id: 0,
             firstName: 1,
             lastName: 1,
+            email: 1,
+            'store.id': '$store._id',
           },
         },
       )
@@ -59,15 +62,6 @@ export class MongoRepository {
       .db('bicycle_rental')
       .collection('stores')
       .insertOne(store);
-  }
-
-  async saveEmployee(employee) {
-    const result = await this.client
-      .db('bicycle_rental')
-      .collection('employees')
-      .insertOne(employee);
-    employee.id = result.insertedId;
-    return employee;
   }
 
   async saveBicycle(bicycle) {
@@ -89,8 +83,8 @@ export class MongoRepository {
   }
 
   async saveRental(rental) {
-    rental.customer._id = rental.customer.id;
-    rental.bicycle._id = rental.bicycle.id;
+    rental.customer._id = new ObjectId(rental.customer.id);
+    rental.bicycle._id = new ObjectId(rental.bicycle.id);
     delete rental.customer.id;
     delete rental.bicycle.id;
     const result = await this.client.db.collection('rentals').insertOne(rental);
@@ -154,39 +148,83 @@ export class MongoRepository {
       .toArray();
   }
 
-  async saveEmployee(employee) {
+  async createEmployee(employee) {
+    employee.store._id = new ObjectId(employee.store.id);
+    delete employee.store.id;
+    if (employee.role === 'salesperson') {
+      delete employee.certificate;
+      delete employee.specialisation;
+    } else {
+      delete employee.revenue;
+      delete employee.commissionRate;
+    }
     return this.client.db.collection('employees').insertOne(employee);
   }
 
   async analyticsSembera(filters) {
-    const { zipcode_min = '1010', zipcode_max = '1230' } = filters;
-    const query = `
-      SELECT 
-        s.id AS StoreID,
-        s.address,
+    const { zipcodeMin = '1010', zipcodeMax = '1230' } = filters;
+    const pipeline = [
+      { $match: { zipCode: { $gte: zipcodeMin, $lte: zipcodeMax } } },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: '_id',
+          foreignField: 'store._id',
+          as: 'staff',
+        },
+      },
+      {
+        $addFields: {
+          salespersons: {
+            $filter: {
+              input: '$staff',
+              as: 'sales',
+              cond: { $eq: ['$$sales.role', 'salesperson'] },
+            },
+          },
+          technicians: {
+            $filter: {
+              input: '$staff',
+              as: 'tech',
+              cond: { $eq: ['$$tech.role', 'technician'] },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          storeId: 1,
+          address: 1,
+          salesPersonsN: { $size: '$salespersons' },
+          newlyHiredSalespersonsN: {
+            $size: {
+              $filter: {
+                input: '$salespersons',
+                as: 'sp',
+                cond: { $eq: ['$$sp.revenue', 0] },
+              },
+            },
+          },
+          totalRevenue: { $sum: '$salespersons.revenue' },
+          avgRevenue: { $avg: '$salespersons.revenue' },
+          techniciansN: { $size: '$technicians' },
+          employees: {
+            $map: {
+              input: '$staff',
+              as: 'e',
+              in: { $concat: ['$$e.firstName', ' ', '$$e.lastName'] },
+            },
+          },
+        },
+      },
 
-        -- Salesperson metrics
-        COUNT(DISTINCT sp.employee_id) AS NumSalespersons,
-        SUM(CASE WHEN sp.revenue = 0 THEN 1 ELSE 0 END) AS NewlyHiredSalespersons,
-        ROUND(SUM(sp.revenue), 2) AS TotalRevenue,
-        ROUND(AVG(NULLIF(sp.revenue, 0)), 2) AS AvgRevenue,
-
-        -- Technician metrics
-        COUNT(DISTINCT t.employee_id) AS NumTechnicians,
-
-        -- List of employees at the store
-        STRING_AGG(DISTINCT e.first_name || ' ' || e.second_name, ', ' ORDER BY e.second_name) AS Employees
-        
-      FROM store s
-      LEFT JOIN employee e ON s.id = e.store_id
-      LEFT JOIN salesperson sp ON e.id = sp.employee_id
-      LEFT JOIN technician t ON e.id = t.employee_id
-      WHERE s.zip_code BETWEEN $1 AND $2
-      GROUP BY s.id, s.address;
-    `;
-    return await this.client
-      .query(query, [zipcode_min, zipcode_max])
-      .then((r) => r.rows);
+      { $sort: { storeId: 1 } },
+    ];
+    return await this.client.db
+      .collection('stores')
+      .aggregate(pipeline)
+      .toArray();
   }
 
   async analyticsHryhorovych({ startDate, endDate }) {

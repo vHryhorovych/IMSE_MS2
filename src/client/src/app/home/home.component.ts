@@ -13,7 +13,7 @@ export class HomeComponent {
   private readonly authService = inject(AuthService);
 
   userRole = this.authService.getUserRole();
-  useCaseUrl = this.userRole() === 'salesperson' ? '/oboarding' : '/stores';
+  useCaseUrl = this.userRole() === 'salesperson' ? '/onboarding' : '/stores';
   analyticsUrl =
     this.userRole() === 'salesperson'
       ? '/analytics/sembera'
